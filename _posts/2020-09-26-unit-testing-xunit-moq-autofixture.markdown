@@ -8,7 +8,7 @@ På studiet har vi et fag om testing, og her har fokus været på at unit teste 
 
 TL;DR
 =====
-Vi har kigget på test drevet udvikling, samt hvordan det spiller sammen med Moq og AutoFixture og hvordan det kan hjælpe dig med at skrive mere robuste tests. =
+Vi har kigget på test drevet udvikling, samt hvordan det spiller sammen med Moq og AutoFixture og hvordan det kan hjælpe dig med at skrive mere robuste tests. 
 
 Data-Drevet testing med xUnit
 =====
@@ -127,7 +127,9 @@ public static class GalaxyClass
 
 Nå tilbage til hvor vi slap - ClassMember, InlineData og MemberData, hvad har de tilfælles?
 
-Vi kan også se at MemberData og ClassData forventer en eller anden form for IEnumerable<object[]>. Men hvordan konverteres de to argumenter til et object array i vores InlineData?
+Vi se at MemberData og ClassData forventer en eller anden form for IEnumerable<object[]>. Men hvordan konverteres de to argumenter til et objekt array i vores InlineData?
+
+Lad os se på InlineDataAttribute fra xUnits kildekode. 
 
 ```csharp
 /// <summary>
@@ -152,12 +154,12 @@ public sealed class InlineDataAttribute : DataAttribute
   public override IEnumerable<object?[]> GetData(MethodInfo testMethod) => new[] { data };
 }
 ```
-Her ser man brugen af params keywordet i konstruktøren. Det gør at man kan angive ens parametre til at være komma sepereret. 
+Her ser man brugen af params keywordet i konstruktøren. Det gør at man kan angive ens parametre til at være komma separeret. 
 
 Når man kigger på deres kilde kode, kan man se at de tre arver fra DataAttribute. DataAttribut er en abstrakt klasse, som tvinger dig til at implementere GetData som tager imod en MethodInfo.
 MethodInfo er fundet i System.Reflection og er en måde hvorpå man kan få informationer ud af en metode fra en type, f.eks. parametrene metoden bliver kaldt med.
 
-Dette betyder altså at du selv kan definere hvordan dataen skal komme fra, og hvad der skal ske inden du får dataen ved blot at implementere din egen DataAttribute. 
+Dette betyder altså at du selv kan definere hvordan data skal komme fra, og hvad der skal ske inden du får data ved blot at implementere din egen DataAttribute. 
 
 Her ses et eksempel på en implementation som kan læse fra en CSV fil.
 
@@ -209,7 +211,7 @@ public class ReadCsvData : DataAttribute
 }
 ```
 
-Dette betyder faktisk, at man kan gøre sin CI/CD pipeline utrolig smart ved at have et flow hvor vitale dele af ens software gemmer fejlede statements ned, som så bliver ført igennem paramatiseret test. På den måde gør du din kode virkelig test drevet - du kan ikke release noget før de fejl, som er sket i produktion, er fikset.
+Dette betyder faktisk, at man kan gøre sin CI/CD pipeline utrolig smart ved at have et flow hvor vitale dele af ens software gemmer fejlede statements ned, som så bliver ført igennem parametre til testen. På den måde gør du din kode virkelig test drevet - du kan ikke release noget før de fejl, som er sket i produktion, er fikset.
 
 Mock med Moq
 =====
@@ -322,7 +324,7 @@ public void Service_UpdatePerson()
 
 Der er tre ting der er forkerte i denne test.
 * Der er afhængighed i vores test til Repository.
-* Der er potentiale for, at vi kalder noget forkert når vi bruger en konrekt implementering - det kunne være vi kaldte noget der kunne skade produktion.
+* Der er potentiale for, at vi kalder noget forkert når vi bruger en konkret implementering - det kunne være vi kaldte noget der kunne skade produktion.
 * Klasserne der testes på kan ændre sig, f.eks. konstruktøren eller property navne (mere om det senere)
 
 Hvordan løser vi det her? Med Mocking - mocking er hvor man overstyrer sine objekter til at fortælle dem, hvordan de skal opføre sig.
@@ -345,7 +347,7 @@ public class TestRepository : IRepository
 }
 ```
 
-Nu har vi overstyret repositoriet til at gøre, lige præcis som vi vil have det skal gøre - men det bliver en meget omstændig proces at gøre for alle objekter der skal mockes.
+Nu har vi overstyret repositoriet til at gøre, lige præcis som vi vil have det skal gøre - men det bliver en meget omstændelig proces at gøre for alle objekter der skal mockes.
 
 Derfor findes der Moq.
 
@@ -366,7 +368,7 @@ public void Service_UpdatePerson()
   //Assert tjek om GetById er blevet kaldt hvordan?
 }
 ```
-Vi starter med at instantiere en Mock af Repository. På den måde har vi nu abstrahereret konkrete implementeringer væk, fordi Mock har essentielt lavet TestRepository for os. Dette gøres ved hjælp
+Vi starter med at instantiere en Mock af Repository. På den måde har vi nu abstraheret konkrete implementeringer væk, fordi Mock har essentielt lavet TestRepository for os. Dette gøres ved hjælp
 af en dynamisk proxy som essentiel compiler og opretter en klasse på runtime, som har den opførelse du sætter til at være gældende i f.eks. Setup. Hvis du vil læse mere om dynamiske proxyer så gør
 Moq brug af http://www.castleproject.org/projects/dynamicproxy/
 
@@ -374,7 +376,7 @@ Setup fortæller at lige præcis denne her metode på Mocken skal returnere dett
 
 Nå men nu har vi fjernet to fejl
 * Der er afhængighed i vores test til Repository.
-* Der er potentiale for, at vi kalder noget forkert når vi bruger en konrekt implementering - det kunne være vi kaldte noget der kunne skade produktion.
+* Der er potentiale for, at vi kalder noget forkert når vi bruger en konkret implementering - det kunne være vi kaldte noget der kunne skade produktion.
 
 Men hvad med den sidste?
 
@@ -404,7 +406,7 @@ Og hvad gør vi hvis Service får nye dependencies?
 
 Her kan AutoFixture og AutoMoq hjælpe os
 
-AutoFixture hjælper os helt vildt med vores Arrange del - den kan stortset fjerne den. Lad os kigge på hvordan.
+AutoFixture hjælper os helt vildt med vores Arrange del. Lad os kigge på hvordan.
 
 ```csharp
 [Theory]
